@@ -65,11 +65,12 @@ public class UserExpandableListAdapter extends BaseExpandableListAdapter {
         childTv.setText(user.getUserName());	//用户名显示
         childIp.setText(user.getIp());	//IP显示
         childImg.setImageDrawable(res.getDrawable(R.drawable.ic_launcher));
-        if(user.getMsgCount() == 0){	//若没有未接收的消息，则不显示
-            childInfoNo.setVisibility(View.GONE);
-        }else{
-            childInfoNo.setText("" + user.getMsgCount());
-        }
+        childInfoNo.setVisibility(View.GONE);
+//        if(user.getMsgCount() == 0){	//若没有未接收的消息，则不显示
+//            childInfoNo.setVisibility(View.GONE);
+//        }else{
+//            childInfoNo.setText("" + user.getMsgCount());
+//        }
 
 
         myView.setOnClickListener(new View.OnClickListener(){	//点击子项

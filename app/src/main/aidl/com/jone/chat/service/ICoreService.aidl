@@ -1,5 +1,7 @@
-// ICoreAidlInterface.aidl
-package com.jone.chat;
+// ICoreService.aidl
+package com.jone.chat.service;
+
+import com.jone.chat.bean.User;
 
 // Declare any non-default types here with import statements
 /*
@@ -9,11 +11,14 @@ package com.jone.chat;
 *对于非基本数据类型，也不是String和CharSequence类型的，需要有方向指示，包括in、out和inout，in表示由客户端设置，out表示由服务端设置，inout是两者均可设置。
 *AIDL只支持接口方法，不能公开static变量。
 */
-interface ICoreAidlInterface {
+interface ICoreService {
     /**
      * Demonstrates some basic types that you can use as parameters
      * and return values in AIDL.
      */
-    void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,
-            double aDouble, String aString);
+    /*void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,
+            double aDouble, String aString);*/
+    Map getOnlineUsers();
+    void send(String msg);
+    String receive();
 }

@@ -2,6 +2,7 @@ package com.jone.chat;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,11 +13,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jone.chat.adapter.UserExpandableListAdapter;
+import com.jone.chat.application.App;
 import com.jone.chat.bean.User;
 import com.jone.chat.util.SystemUtil;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 
 public class ChatMainActivity extends Activity {
@@ -43,7 +47,6 @@ public class ChatMainActivity extends Activity {
         strGroups = new ArrayList<String>();
         childrens = new ArrayList<List<User>>();
         initViews();
-        refreshOnlineUsers();
     }
 
     private void initViews(){
@@ -71,6 +74,22 @@ public class ChatMainActivity extends Activity {
         //清空数据
         strGroups.clear();
         childrens.clear();
+
+        try {
+            Map map =  App.getInstance().getCoreService().getOnlineUsers();
+            txtOnlineUserCount.setText("当前在线"+ map.size() + "个用户");
+
+            strGroups.add("未分组");
+            List<User> users = new ArrayList<>();
+            Iterator iterator = map.values().iterator();
+            while (iterator.hasNext()){
+                users.add((User) iterator.next());
+            }
+            childrens.add(users);
+            adapter.notifyDataSetChanged();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
 
