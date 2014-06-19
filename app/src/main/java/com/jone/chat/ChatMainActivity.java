@@ -1,6 +1,10 @@
 package com.jone.chat;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.view.Menu;
@@ -18,9 +22,7 @@ import com.jone.chat.bean.User;
 import com.jone.chat.util.SystemUtil;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 
 public class ChatMainActivity extends Activity {
@@ -35,7 +37,9 @@ public class ChatMainActivity extends Activity {
     private ExpandableListView listOnlineUsers;
     private UserExpandableListAdapter adapter;
     private List<String> strGroups;
-    private List<List<User>> childrens;
+    private List<List<User>> children;
+
+    private BroadcastReceiver broadcastReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,9 +48,17 @@ public class ChatMainActivity extends Activity {
             Toast.makeText(this, R.string.no_wifi, Toast.LENGTH_LONG).show();
         }
         localIp = SystemUtil.getLocalIpAddress();
-        strGroups = new ArrayList<String>();
-        childrens = new ArrayList<List<User>>();
+        strGroups = new ArrayList<>();
+        strGroups.add("未分组");
+        children = new ArrayList<>();
         initViews();
+        bindBroadcast();
+        App.getHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                refreshOnlineUsers();
+            }
+        }, 1000);
     }
 
     private void initViews(){
@@ -61,31 +73,49 @@ public class ChatMainActivity extends Activity {
         btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                System.out.println("刷新列表");
                 refreshOnlineUsers();
             }
         });
 
         listOnlineUsers = (ExpandableListView) findViewById(R.id.listOnlineUsers);
-        adapter = new UserExpandableListAdapter(ChatMainActivity.this, strGroups, childrens);
+        adapter = new UserExpandableListAdapter(ChatMainActivity.this, strGroups, children);
         listOnlineUsers.setAdapter(adapter);
     }
 
-    private void refreshOnlineUsers(){
-        //清空数据
-        strGroups.clear();
-        childrens.clear();
-
-        try {
-            Map map =  App.getInstance().getCoreService().getOnlineUsers();
-            txtOnlineUserCount.setText("当前在线"+ map.size() + "个用户");
-
-            strGroups.add("未分组");
-            List<User> users = new ArrayList<>();
-            Iterator iterator = map.values().iterator();
-            while (iterator.hasNext()){
-                users.add((User) iterator.next());
+    private void bindBroadcast(){
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_TIME_TICK); // 每分钟更新，只能采用代码registerReceiver动态注册方式
+        intentFilter.addAction(Intent.ACTION_TIME_CHANGED); // 时间被改变，人为设置时间
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                System.out.println("action: " + intent.getAction());
+                String action = intent.getAction();
+                switch (action){
+                    case Intent.ACTION_TIME_TICK:
+                    case Intent.ACTION_TIME_CHANGED:
+                        System.out.println("通知在线");
+                        try {
+                            App.getInstance().getCoreService().noticeOnline();
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                }
             }
-            childrens.add(users);
+        };
+        registerReceiver(broadcastReceiver, intentFilter);
+    }
+
+    private void refreshOnlineUsers(){
+        //检查在线用户
+        children.clear();
+        try {
+            List<User> onlineUsers = App.getInstance().getCoreService().getOnlineUsers();
+            System.out.println("当前在线"+ onlineUsers.size() + "个用户");
+            txtOnlineUserCount.setText("当前在线"+ onlineUsers.size() + "个用户");
+            children.add(onlineUsers);
             adapter.notifyDataSetChanged();
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -110,5 +140,30 @@ public class ChatMainActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        System.out.println("ChatMainActivity onStart");
+        try {
+            App.getInstance().getCoreService().noticeOnline();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        System.out.println("ChatMainActivity onStop");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(broadcastReceiver != null){
+            unregisterReceiver(broadcastReceiver);
+        }
     }
 }

@@ -18,7 +18,10 @@ import com.jone.chat.util.SystemUtil;
 
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class CoreService extends Service {
@@ -29,6 +32,9 @@ public class CoreService extends Service {
     public void onCreate() {
         super.onCreate();
         System.out.println("CoreService onCreate");
+        online();
+    }
+    private void online(){
         startUDPServer();
         startUDPClient();
     }
@@ -45,27 +51,23 @@ public class CoreService extends Service {
 
                     @Override
                     public void onReceived(SocketAddress remoteAddress, String msg, UDPReceiver receiver) {
+                        System.out.println("udpServer onReceived " + remoteAddress);
                         try {
                             CommunicationBean communicationBean = App.getSerializer().loadAs(msg, CommunicationBean.class);
                             String action = communicationBean.getAction();
                             Object data = communicationBean.getData();
                             switch (action){
-                                case Constant.USER_ONLINE_ACTION:
-                                    if(data != null){
-                                        User user = (User) data;
-                                        System.out.println("user: " + user.getUserName());
-                                        saveUser(user);
-                                        receiver.receive(App.getSerializer().dump(getOnlineInfo())); //告知自己在线
-                                    }
+                                case Constant.NET_USER_ONLINE_ACTION:
+                                    User user = (User) data;
+                                    user.setLastActiveTime(System.currentTimeMillis());
+                                    userMap.put(user.getIp(), user);
+                                    receiver.receive(App.getSerializer().dump(getLocalOnlineInfo()));
                                     break;
                             }
 
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-//                        Looper.prepare();
-//                        Toast.makeText(CoreService.this, "udpServer onReceived " + remoteAddress + " msg: " + msg , Toast.LENGTH_LONG).show();
-//                        Looper.loop();
                     }
 
                     @Override
@@ -86,21 +88,24 @@ public class CoreService extends Service {
                         @Override
                         public void onOpened() {
                             System.out.println("udpClient onOpened");
-                            udpClient.sendMsg("255.255.255.255", App.getSerializer().dump(getOnlineInfo()));
                         }
 
                         @Override
                         public void onReceived(SocketAddress remoteAddress, String msg, UDPReceiver receiver) {
+                            System.out.println("udpClient onReceived " + remoteAddress);
                             try {
                                 CommunicationBean communicationBean = App.getSerializer().loadAs(msg, CommunicationBean.class);
                                 String action = communicationBean.getAction();
                                 Object data = communicationBean.getData();
                                 switch (action){
-                                    case Constant.USER_ONLINE_ACTION:
+                                    case Constant.NET_USER_ONLINE_ACTION:
                                         if(data != null){
                                             User user = (User) data;
-                                            System.out.println("user: " + user.getUserName());
-                                            saveUser(user);
+                                            user.setLastActiveTime(System.currentTimeMillis());
+                                            if(user.getIp().equals(SystemUtil.getLocalIpAddress())){
+                                                return;
+                                            }
+                                            userMap.put(user.getIp(), user);
                                         }
                                         break;
                                 }
@@ -122,22 +127,27 @@ public class CoreService extends Service {
         }).start();
     }
 
-    public CommunicationBean getOnlineInfo(){
-        User localUser = getLocalUser();
-        return new CommunicationBean(localUser.getIp(), null, Constant.USER_ONLINE_ACTION, localUser);
-    }
-
-    private User getLocalUser(){
+    public CommunicationBean getLocalOnlineInfo(){
         String ip = SystemUtil.getLocalIpAddress();
-        User user = new User();
-        user.setUserName("用户(" + ip + ")");
-        user.setIp(ip);
-        user.setMac(SystemUtil.getLocalMacAddress(CoreService.this));
-        return user;
+        User localUser = new User();
+        localUser.setUserName("用户(" + ip + ")");
+        localUser.setIp(ip);
+        localUser.setMac(SystemUtil.getLocalMacAddress(CoreService.this));
+        return new CommunicationBean(localUser.getIp(), null, Constant.NET_USER_ONLINE_ACTION, localUser);
     }
 
-    private void saveUser(User user){
-        userMap.put(user.getIp(), user);
+
+    private List<User> getOnlineUserList(){
+        List<User> onlineUsers = new ArrayList<>();
+        if(userMap != null || userMap.size() > 0){
+            long nowTime = System.currentTimeMillis();
+            for(User user : userMap.values()){
+                if(nowTime - user.getLastActiveTime() <= (1000 * 60)){ //如果用户1分钟之内有返回自己的状态则认为该用户在线
+                    onlineUsers.add(user);
+                }
+            }
+        }
+        return onlineUsers;
     }
 
     @Override
@@ -146,36 +156,34 @@ public class CoreService extends Service {
         return stub;
     }
 
+    @Override
+    public boolean onUnbind(Intent intent) {
+        System.out.println("CoreService onUnbind");
+        return super.onUnbind(intent);
+    }
+
     ICoreService.Stub stub = new ICoreService.Stub(){
 
         @Override
-        public Map getOnlineUsers() throws RemoteException {
-            return userMap;
+        public List<User> getOnlineUsers() throws RemoteException {
+            return getOnlineUserList();
         }
 
         @Override
-        public void send(String msg) throws RemoteException {
-            System.out.println("send: " + msg);
-//            if(udpClient != null){
-//                udpClient.sendMsg("255.255.255.255", msg);
-//            }
+        public void noticeOnline() throws RemoteException {
+            udpClient.sendMsg("255.255.255.255", App.getSerializer().dump(getLocalOnlineInfo()));
         }
 
         @Override
-        public String receive() throws RemoteException {
-            System.out.println("receive");
-            return "receive";
+        public void noticeOffline() throws RemoteException {
+
         }
     };
+
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(udpServer != null){
-            udpServer.close();
-        }
-        if(udpClient != null){
-            udpClient.close();
-        }
+        System.out.println("CoreService onDestroy");
     }
 }

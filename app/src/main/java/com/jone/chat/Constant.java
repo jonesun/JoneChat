@@ -4,6 +4,9 @@ package com.jone.chat;
  * Created by jone on 2014/6/18.
  */
 public class Constant {
-    public static final String USER_ONLINE_ACTION = "userOnlineAction";
-    public static final String USER_OFFLINE_ACTION = "userOfflineAction";
+    public static final String NET_USER_ONLINE_ACTION = "netUserOnline";
+    //public static final String NET_USER_OFFLINE_ACTION = "netUserOffline";
+
+    //public static final String BROADCAST_USER_ONLINE_ACTION = "broadcastUserOnline";
+    //public static final String BROADCAST_USER_OFFLINE_ACTION = "broadcastUserOffline";
 }

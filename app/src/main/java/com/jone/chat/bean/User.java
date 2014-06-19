@@ -12,6 +12,7 @@ public class User implements Parcelable{
     private String userName;	// 用户名
     private String ip;			//ip地址
     private String mac;			//MAC地址
+    private long lastActiveTime; //最后活跃时间(用于检测在线情况)
 
     public User(){}
 
@@ -19,6 +20,7 @@ public class User implements Parcelable{
         this.userName = parcel.readString();
         this.ip = parcel.readString();
         this.mac = parcel.readString();
+        this.lastActiveTime = parcel.readLong();
     }
 
     @Override
@@ -31,6 +33,7 @@ public class User implements Parcelable{
         parcel.writeString(userName);
         parcel.writeString(ip);
         parcel.writeString(mac);
+        parcel.writeLong(lastActiveTime);
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
@@ -73,5 +76,13 @@ public class User implements Parcelable{
 
     public void setMac(String mac) {
         this.mac = mac;
+    }
+
+    public long getLastActiveTime() {
+        return lastActiveTime;
+    }
+
+    public void setLastActiveTime(long lastActiveTime) {
+        this.lastActiveTime = lastActiveTime;
     }
 }

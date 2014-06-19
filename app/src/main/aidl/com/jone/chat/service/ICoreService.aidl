@@ -17,8 +17,11 @@ interface ICoreService {
      * and return values in AIDL.
      */
     /*void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,
-            double aDouble, String aString);*/
+            double aDouble, String aString);
     Map getOnlineUsers();
     void send(String msg);
-    String receive();
+    String receive();*/
+    List<User> getOnlineUsers();
+    void noticeOnline();
+    void noticeOffline();
 }
