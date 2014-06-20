@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.jone.chat.adapter.UserExpandableListAdapter;
 import com.jone.chat.application.App;
 import com.jone.chat.bean.User;
+import com.jone.chat.util.ShakeListener;
 import com.jone.chat.util.SystemUtil;
 
 import java.util.ArrayList;
@@ -81,6 +82,15 @@ public class ChatMainActivity extends Activity {
         listOnlineUsers = (ExpandableListView) findViewById(R.id.listOnlineUsers);
         adapter = new UserExpandableListAdapter(ChatMainActivity.this, strGroups, children);
         listOnlineUsers.setAdapter(adapter);
+
+        // 摇一摇实现列表刷新
+        ShakeListener shakeListener = new ShakeListener(ChatMainActivity.this); // 创建一个对象
+        shakeListener.setOnShakeListener(new ShakeListener.OnShakeListener() { // 调用setOnShakeListener方法进行监听
+            public void onShake() {
+                System.out.println("刷新列表");
+                refreshOnlineUsers();
+            }
+        });
     }
 
     private void bindBroadcast(){
