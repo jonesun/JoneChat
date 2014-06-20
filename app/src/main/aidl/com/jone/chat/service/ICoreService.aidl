@@ -18,9 +18,9 @@ interface ICoreService {
      */
     /*void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,
             double aDouble, String aString);*/
-    void send(String ip, String msg);
+    void send(in User toUser, String msg);
     //String receive();
     List<User> getOnlineUsers();
     void noticeOnline();
-    void noticeOffline();
+    void noticeUIState(boolean isDestroy);
 }

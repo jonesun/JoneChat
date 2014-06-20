@@ -7,26 +7,25 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.os.Vibrator;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.jone.chat.ChatMainActivity;
 import com.jone.chat.Constant;
 import com.jone.chat.R;
 import com.jone.chat.adapter.ChatListAdapter;
 import com.jone.chat.application.App;
-import com.jone.chat.bean.CommunicationBean;
 import com.jone.chat.bean.User;
+import com.jone.chat.util.SystemUtil;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 public class ChatRoomActivity extends Activity {
@@ -50,7 +49,11 @@ public class ChatRoomActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_room);
         if(getIntent() != null){
-            charUser = getIntent().getParcelableExtra("user");
+            charUser = getIntent().getParcelableExtra("fromUser");
+            String receiveMsg = getIntent().getStringExtra("receiveMsg");
+            if(receiveMsg != null){
+                msgList.add(charUser.getUserName() + "说: " + receiveMsg);
+            }
         }
         initViews();
         bindBroadcast();
@@ -86,7 +89,7 @@ public class ChatRoomActivity extends Activity {
                     String msg = editInput.getText().toString();
                     if(charUser != null){
                         try {
-                            App.getInstance().getCoreService().send(charUser.getIp(), msg);
+                            App.getInstance().getCoreService().send(charUser, msg);
                             msgList.add("我说: " + msg);
                             adapter.notifyDataSetChanged();
                         } catch (RemoteException e) {
@@ -97,7 +100,6 @@ public class ChatRoomActivity extends Activity {
                     }
 
                 }
-               // App.getInstance().getCoreService().
             }
         });
     }
@@ -112,9 +114,13 @@ public class ChatRoomActivity extends Activity {
                 String action = intent.getAction();
                 switch (action){
                     case Constant.BROADCAST_RECEIVE_MSG_ACTION:
-                        CommunicationBean communicationBean = (CommunicationBean) intent.getSerializableExtra("communicationBean");
-                        msgList.add(communicationBean.getFromCode() + "说: " + communicationBean.getData().toString());
-                        adapter.notifyDataSetChanged();
+                        User fromUser = intent.getParcelableExtra("fromUser");
+                        String receiveMsg = intent.getStringExtra("receiveMsg");
+                        if(fromUser != null && fromUser.getIp().equals(charUser.getIp())){ //发给自己的再更新列表
+                            SystemUtil.vibrate(context);
+                            msgList.add(fromUser.getUserName() + "说: " + receiveMsg);
+                            adapter.notifyDataSetChanged();
+                        }
                         break;
                 }
             }

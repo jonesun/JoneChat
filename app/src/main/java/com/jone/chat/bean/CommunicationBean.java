@@ -6,34 +6,34 @@ import java.io.Serializable;
  * Created by jone on 2014/6/18.
  */
 public class CommunicationBean implements Serializable{
-    private String fromCode;
-    private String toCode;
+    private User fromUser;
+    private User toUser;
     private String action;
     private Object data;
 
     public CommunicationBean(){}
 
-    public CommunicationBean(String fromCode, String toCode, String action, Object data){
-        this.setFromCode(fromCode);
-        this.setToCode(toCode);
-        this.setAction(action);
-        this.setData(data);
+    public CommunicationBean(User fromUser, User toUser, String action, Object data){
+        this.fromUser = fromUser;
+        this.toUser = toUser;
+        this.action = action;
+        this.data = data;
     }
 
-    public String getFromCode() {
-        return fromCode;
+    public User getFromUser() {
+        return fromUser;
     }
 
-    public void setFromCode(String fromCode) {
-        this.fromCode = fromCode;
+    public void setFromUser(User fromUser) {
+        this.fromUser = fromUser;
     }
 
-    public String getToCode() {
-        return toCode;
+    public User getToUser() {
+        return toUser;
     }
 
-    public void setToCode(String toCode) {
-        this.toCode = toCode;
+    public void setToUser(User toUser) {
+        this.toUser = toUser;
     }
 
     public String getAction() {

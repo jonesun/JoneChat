@@ -7,18 +7,24 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.os.Vibrator;
+import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jone.chat.adapter.UserExpandableListAdapter;
 import com.jone.chat.application.App;
 import com.jone.chat.bean.User;
+import com.jone.chat.ui.activity.ChatRoomActivity;
 import com.jone.chat.util.ShakeListener;
 import com.jone.chat.util.SystemUtil;
 
@@ -27,7 +33,6 @@ import java.util.List;
 
 
 public class ChatMainActivity extends Activity {
-    String localIp;
     private ImageButton imBtnHead;
     private TextView txtLocalName;
     private TextView txtLocalIP;
@@ -40,6 +45,8 @@ public class ChatMainActivity extends Activity {
     private List<String> strGroups;
     private List<List<User>> children;
 
+    private LinearLayout layoutBottom;
+
     private BroadcastReceiver broadcastReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +55,12 @@ public class ChatMainActivity extends Activity {
         if(!SystemUtil.isWifiActive(ChatMainActivity.this)){	//若wifi没有打开，提示
             Toast.makeText(this, R.string.no_wifi, Toast.LENGTH_LONG).show();
         }
-        localIp = SystemUtil.getLocalIpAddress();
+        //告诉远程服务界面启动
+        try {
+            App.getInstance().getCoreService().noticeUIState(false);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         strGroups = new ArrayList<>();
         strGroups.add("未分组");
         children = new ArrayList<>();
@@ -63,6 +75,7 @@ public class ChatMainActivity extends Activity {
     }
 
     private void initViews(){
+        String localIp = SystemUtil.getLocalIpAddress();
         imBtnHead = (ImageButton) findViewById(R.id.imBtnHead);
         txtLocalName = (TextView) findViewById(R.id.txtLocalName);
         txtLocalName.setText("用户(" + localIp + ")");
@@ -82,6 +95,8 @@ public class ChatMainActivity extends Activity {
         listOnlineUsers = (ExpandableListView) findViewById(R.id.listOnlineUsers);
         adapter = new UserExpandableListAdapter(ChatMainActivity.this, strGroups, children);
         listOnlineUsers.setAdapter(adapter);
+
+        layoutBottom = (LinearLayout) findViewById(R.id.layoutBottom);
 
         // 摇一摇实现列表刷新
         ShakeListener shakeListener = new ShakeListener(ChatMainActivity.this); // 创建一个对象
@@ -114,11 +129,39 @@ public class ChatMainActivity extends Activity {
                         }
                         break;
                     case Constant.BROADCAST_RECEIVE_MSG_ACTION:
+                        User fromUser = intent.getParcelableExtra("fromUser");
+                        String receiveMsg = intent.getStringExtra("receiveMsg");
+                        SystemUtil.vibrate(context); //调用手机震动
+                        showReceive(fromUser, receiveMsg);
                         break;
                 }
             }
         };
         registerReceiver(broadcastReceiver, intentFilter);
+    }
+
+    private void showReceive(final User fromUser, final String receiveMsg){
+        TextView textView = (TextView) layoutBottom.findViewWithTag(fromUser.getIp());
+        if(textView == null){
+            textView = new TextView(ChatMainActivity.this);
+            textView.setEllipsize(TextUtils.TruncateAt.END);
+            textView.setSingleLine(true);
+            textView.setTag(fromUser.getIp());
+            textView.setGravity(Gravity.CENTER_VERTICAL);
+            textView.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+            textView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(ChatMainActivity.this, ChatRoomActivity.class);
+                    intent.putExtra("fromUser", fromUser);
+                    intent.putExtra("receiveMsg", receiveMsg);
+                    startActivity(intent);
+                    layoutBottom.removeView(view);
+                }
+            });
+            layoutBottom.addView(textView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 45));
+        }
+        textView.setText(fromUser.getUserName() + "发来新消息:" + receiveMsg);
     }
 
     private void refreshOnlineUsers(){
@@ -174,6 +217,12 @@ public class ChatMainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        //告诉远程服务界面销毁
+        try {
+            App.getInstance().getCoreService().noticeUIState(true);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         super.onDestroy();
         if(broadcastReceiver != null){
             unregisterReceiver(broadcastReceiver);

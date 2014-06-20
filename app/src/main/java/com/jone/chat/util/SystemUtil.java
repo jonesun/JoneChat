@@ -6,6 +6,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Vibrator;
 import android.util.Log;
 
 import org.apache.http.conn.util.InetAddressUtils;
@@ -97,5 +98,13 @@ public class SystemUtil {
         WifiManager wifi = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifi.getConnectionInfo();
         return info.getMacAddress();
+    }
+
+    /**
+     * 手机震动
+     */
+    public static void vibrate(Context context){
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator.vibrate(300);
     }
 }

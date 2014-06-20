@@ -1,11 +1,18 @@
 package com.jone.chat.service;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.os.RemoteException;
+import android.widget.RemoteViews;
 
 import com.jone.chat.Constant;
+import com.jone.chat.R;
 import com.jone.chat.application.App;
 import com.jone.chat.bean.CommunicationBean;
 import com.jone.chat.bean.User;
@@ -14,6 +21,7 @@ import com.jone.chat.net.UDPClient;
 import com.jone.chat.net.UDPListener;
 import com.jone.chat.net.UDPReceiver;
 import com.jone.chat.net.UDPServer;
+import com.jone.chat.ui.activity.ChatRoomActivity;
 import com.jone.chat.util.SystemUtil;
 
 import java.net.SocketAddress;
@@ -28,7 +36,7 @@ public class CoreService extends Service {
     private Map<String, User> userMap = new HashMap<>();
     private UDPServer udpServer;
     private UDPClient udpClient;
-    //private User localUser;
+    private boolean isUIDestroy;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -67,10 +75,16 @@ public class CoreService extends Service {
                                 case Constant.NET_SEND_MSG:
                                     String receiveMsg = data.toString();
                                     System.out.println("receiveMsg: " + receiveMsg);
-                                    Intent intent = new Intent();
-                                    intent.putExtra("communicationBean", communicationBean);
-                                    intent.setAction(Constant.BROADCAST_RECEIVE_MSG_ACTION);
-                                    sendBroadcast(intent);
+                                    if(isUIDestroy){ //如果UI关闭了,则发一个通知
+                                        showNotification(communicationBean.getFromUser(), receiveMsg);
+                                    }else {
+                                        Intent intent = new Intent();
+                                        intent.putExtra("fromUser", communicationBean.getFromUser());
+                                        intent.putExtra("receiveMsg", receiveMsg);
+                                        intent.setAction(Constant.BROADCAST_RECEIVE_MSG_ACTION);
+                                        sendBroadcast(intent);
+                                    }
+
                                     break;
                             }
 
@@ -138,8 +152,30 @@ public class CoreService extends Service {
 
     public CommunicationBean getLocalOnlineInfo(){
         User localUser = getLocalUser();
-        return new CommunicationBean(localUser.getUserName(), null, Constant.NET_USER_ONLINE_ACTION, localUser);
+        return new CommunicationBean(localUser, null, Constant.NET_USER_ONLINE_ACTION, localUser);
     }
+
+    /**
+     * 在状态栏显示通知
+     */
+    private void showNotification(User fromUser, String receiveMsg){
+        NotificationManager notificationManager = (NotificationManager)getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+        Notification notification = new Notification();
+        notification.icon = R.drawable.ic_launcher;
+        notification.defaults = Notification.DEFAULT_ALL;
+        notification.flags = Notification.FLAG_AUTO_CANCEL;//点击notification之后，该notification自动消失
+        Intent notificationIntent = new Intent(CoreService.this, ChatRoomActivity.class); // 点击该通知后要跳转的Activity
+        notificationIntent.putExtra("fromUser", fromUser);
+        notificationIntent.putExtra("receiveMsg", receiveMsg);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.layout_notification);
+        remoteViews.setTextViewText(R.id.txtTile, fromUser.getUserName() + "发来消息");
+        remoteViews.setTextViewText(R.id.txtContent, receiveMsg);
+        notification.contentView = remoteViews;
+        notification.contentIntent = contentIntent;
+        notificationManager.notify(0, notification);
+    }
+
 
     private User getLocalUser(){
         String localIP = SystemUtil.getLocalIpAddress();
@@ -179,10 +215,9 @@ public class CoreService extends Service {
     ICoreService.Stub stub = new ICoreService.Stub(){
 
         @Override
-        public void send(String ip, String msg) throws RemoteException {
-            User localUser = getLocalUser();
-            CommunicationBean communicationBean = new CommunicationBean(localUser.getUserName(), ip, Constant.NET_SEND_MSG, msg);
-            udpClient.sendMsg(ip, App.getSerializer().dump(communicationBean));
+        public void send(User toUser, String msg) throws RemoteException {
+            CommunicationBean communicationBean = new CommunicationBean(getLocalUser(), toUser, Constant.NET_SEND_MSG, msg);
+            udpClient.sendMsg(toUser.getIp(), App.getSerializer().dump(communicationBean));
         }
 
         @Override
@@ -196,8 +231,9 @@ public class CoreService extends Service {
         }
 
         @Override
-        public void noticeOffline() throws RemoteException {
-
+        public void noticeUIState(boolean isDestroy) throws RemoteException {
+            isUIDestroy = isDestroy;
+            System.out.println("UI界面isDestroy: " + isDestroy);
         }
     };
 

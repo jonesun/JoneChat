@@ -87,7 +87,7 @@ public class UserExpandableListAdapter extends BaseExpandableListAdapter {
             public void onClick(View v) {
                 Intent intent = new Intent();
 
-                intent.putExtra("user", user);
+                intent.putExtra("fromUser", user);
                 intent.setClass(context, ChatRoomActivity.class);
                 context.startActivity(intent);
 //                childInfoNo.setVisibility(View.GONE);
