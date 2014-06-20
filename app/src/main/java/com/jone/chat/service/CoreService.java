@@ -28,6 +28,7 @@ public class CoreService extends Service {
     private Map<String, User> userMap = new HashMap<>();
     private UDPServer udpServer;
     private UDPClient udpClient;
+    //private User localUser;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -62,6 +63,14 @@ public class CoreService extends Service {
                                     user.setLastActiveTime(System.currentTimeMillis());
                                     userMap.put(user.getIp(), user);
                                     receiver.receive(App.getSerializer().dump(getLocalOnlineInfo()));
+                                    break;
+                                case Constant.NET_SEND_MSG:
+                                    String receiveMsg = data.toString();
+                                    System.out.println("receiveMsg: " + receiveMsg);
+                                    Intent intent = new Intent();
+                                    intent.putExtra("communicationBean", communicationBean);
+                                    intent.setAction(Constant.BROADCAST_RECEIVE_MSG_ACTION);
+                                    sendBroadcast(intent);
                                     break;
                             }
 
@@ -128,12 +137,17 @@ public class CoreService extends Service {
     }
 
     public CommunicationBean getLocalOnlineInfo(){
-        String ip = SystemUtil.getLocalIpAddress();
+        User localUser = getLocalUser();
+        return new CommunicationBean(localUser.getUserName(), null, Constant.NET_USER_ONLINE_ACTION, localUser);
+    }
+
+    private User getLocalUser(){
+        String localIP = SystemUtil.getLocalIpAddress();
         User localUser = new User();
-        localUser.setUserName("用户(" + ip + ")");
-        localUser.setIp(ip);
+        localUser.setUserName("用户(" + localIP + ")");
+        localUser.setIp(localIP);
         localUser.setMac(SystemUtil.getLocalMacAddress(CoreService.this));
-        return new CommunicationBean(localUser.getIp(), null, Constant.NET_USER_ONLINE_ACTION, localUser);
+        return localUser;
     }
 
 
@@ -165,6 +179,13 @@ public class CoreService extends Service {
     ICoreService.Stub stub = new ICoreService.Stub(){
 
         @Override
+        public void send(String ip, String msg) throws RemoteException {
+            User localUser = getLocalUser();
+            CommunicationBean communicationBean = new CommunicationBean(localUser.getUserName(), ip, Constant.NET_SEND_MSG, msg);
+            udpClient.sendMsg(ip, App.getSerializer().dump(communicationBean));
+        }
+
+        @Override
         public List<User> getOnlineUsers() throws RemoteException {
             return getOnlineUserList();
         }
@@ -184,6 +205,12 @@ public class CoreService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if(udpServer != null){
+            udpServer.close();
+        }
+        if(udpClient != null){
+            udpClient.close();
+        }
         System.out.println("CoreService onDestroy");
     }
 }

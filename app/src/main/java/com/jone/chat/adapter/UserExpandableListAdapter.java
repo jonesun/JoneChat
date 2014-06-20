@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import com.jone.chat.R;
 import com.jone.chat.bean.User;
+import com.jone.chat.ui.activity.ChatRoomActivity;
+import com.jone.chat.util.SystemUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +64,13 @@ public class UserExpandableListAdapter extends BaseExpandableListAdapter {
         TextView childIp = (TextView) myView.findViewById(R.id.child_ip);
         final TextView childInfoNo = (TextView) myView.findViewById(R.id.child_infos);
         ImageView childImg = (ImageView) myView.findViewById(R.id.user_img);
-        childTv.setText(user.getUserName());	//用户名显示
+
+        if(user.getIp().equals(SystemUtil.getLocalIpAddress())){
+            childTv.setText("自己");	//用户名显示
+        }else {
+            childTv.setText(user.getUserName());	//用户名显示
+        }
+
         childIp.setText(user.getIp());	//IP显示
         childImg.setImageDrawable(res.getDrawable(R.drawable.ic_launcher));
         childInfoNo.setVisibility(View.GONE);
@@ -77,16 +85,14 @@ public class UserExpandableListAdapter extends BaseExpandableListAdapter {
 
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent();
-//                intent.setClass(context, MyFeiGeChatActivity.class);
-//                intent.putExtra("receiverName", user.getUserName());
-//                intent.putExtra("receiverIp", user.getIp());
-//                intent.putExtra("receiverGroup", user.getGroupName());
-//
+                Intent intent = new Intent();
+
+                intent.putExtra("user", user);
+                intent.setClass(context, ChatRoomActivity.class);
+                context.startActivity(intent);
 //                childInfoNo.setVisibility(View.GONE);
 //                user.setMsgCount(0);
-//
-//                context.startActivity(intent);
+
 
             }
 

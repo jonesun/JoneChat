@@ -9,4 +9,8 @@ public class Constant {
 
     //public static final String BROADCAST_USER_ONLINE_ACTION = "broadcastUserOnline";
     //public static final String BROADCAST_USER_OFFLINE_ACTION = "broadcastUserOffline";
+
+    public static final String NET_SEND_MSG = "netSendMsg";
+
+    public static final String BROADCAST_RECEIVE_MSG_ACTION = "broadcastReceiveMsg";
 }

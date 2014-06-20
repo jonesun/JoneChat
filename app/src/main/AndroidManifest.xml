@@ -11,7 +11,6 @@
         <activity
             android:name=".ChatMainActivity"
             android:label="@string/app_name" >
-
         </activity>
 
         <service
@@ -24,13 +23,16 @@
             </intent-filter>
         </service>
 
-        <activity
-            android:name=".ui.activity.TransitionalPageActivity" >
+        <activity android:name=".ui.activity.TransitionalPageActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.activity.ChatRoomActivity"
+            android:label="@string/title_activity_chat_room" >
         </activity>
     </application>
 
