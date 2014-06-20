@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.os.Vibrator;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,7 +16,6 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.jone.chat.ChatMainActivity;
 import com.jone.chat.Constant;
 import com.jone.chat.R;
 import com.jone.chat.adapter.ChatListAdapter;
@@ -29,8 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChatRoomActivity extends Activity {
+    private static boolean isAlive;
 
-    private User charUser;
+    private static User charUser = null;
     private ImageButton imBtnChatUserHead;
     private TextView txtChatUserName;
     private TextView txtChatUserIP;
@@ -44,15 +43,24 @@ public class ChatRoomActivity extends Activity {
 
     private BroadcastReceiver broadcastReceiver;
 
+    public static boolean isIsAlive() {
+        return isAlive;
+    }
+
+    public static User getCharUser() {
+        return charUser;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        isAlive = true;
         setContentView(R.layout.activity_chat_room);
         if(getIntent() != null){
             charUser = getIntent().getParcelableExtra("fromUser");
             String receiveMsg = getIntent().getStringExtra("receiveMsg");
             if(receiveMsg != null){
-                msgList.add(charUser.getUserName() + "说: " + receiveMsg);
+                msgList.add(getCharUser().getUserName() + "说: " + receiveMsg);
             }
         }
         initViews();
@@ -70,9 +78,9 @@ public class ChatRoomActivity extends Activity {
         editInput = (EditText) findViewById(R.id.editInput);
         btnSend = (Button) findViewById(R.id.btnSend);
 
-        if(charUser != null){
-            txtChatUserName.setText(charUser.getUserName());
-            txtChatUserIP.setText(charUser.getIp());
+        if(getCharUser() != null){
+            txtChatUserName.setText(getCharUser().getUserName());
+            txtChatUserIP.setText(getCharUser().getIp());
         }
 
         btnClose.setOnClickListener(new View.OnClickListener() {
@@ -87,9 +95,9 @@ public class ChatRoomActivity extends Activity {
             public void onClick(View view) {
                 if(editInput.getText().length() > 0){
                     String msg = editInput.getText().toString();
-                    if(charUser != null){
+                    if(getCharUser() != null){
                         try {
-                            App.getInstance().getCoreService().send(charUser, msg);
+                            App.getInstance().getCoreService().send(getCharUser(), msg);
                             msgList.add("我说: " + msg);
                             adapter.notifyDataSetChanged();
                         } catch (RemoteException e) {
@@ -116,7 +124,7 @@ public class ChatRoomActivity extends Activity {
                     case Constant.BROADCAST_RECEIVE_MSG_ACTION:
                         User fromUser = intent.getParcelableExtra("fromUser");
                         String receiveMsg = intent.getStringExtra("receiveMsg");
-                        if(fromUser != null && fromUser.getIp().equals(charUser.getIp())){ //发给自己的再更新列表
+                        if(fromUser != null && fromUser.getIp().equals(getCharUser().getIp())){ //发给自己的再更新列表
                             SystemUtil.vibrate(context);
                             msgList.add(fromUser.getUserName() + "说: " + receiveMsg);
                             adapter.notifyDataSetChanged();
@@ -130,6 +138,8 @@ public class ChatRoomActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        isAlive = false;
+        charUser = null;
         super.onDestroy();
         if(broadcastReceiver != null){
             unregisterReceiver(broadcastReceiver);

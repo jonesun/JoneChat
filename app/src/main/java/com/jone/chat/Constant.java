@@ -12,5 +12,6 @@ public class Constant {
 
     public static final String NET_SEND_MSG = "netSendMsg";
 
+    public static final String BROADCAST_RECEIVE_MSG_TO_UI_ACTION = "broadcastReceiveToUIMsg";
     public static final String BROADCAST_RECEIVE_MSG_ACTION = "broadcastReceiveMsg";
 }

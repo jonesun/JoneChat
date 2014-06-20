@@ -112,7 +112,7 @@ public class ChatMainActivity extends Activity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_TIME_TICK); // 每分钟更新，只能采用代码registerReceiver动态注册方式
         intentFilter.addAction(Intent.ACTION_TIME_CHANGED); // 时间被改变，人为设置时间
-        intentFilter.addAction(Constant.BROADCAST_RECEIVE_MSG_ACTION); //收到信息
+        intentFilter.addAction(Constant.BROADCAST_RECEIVE_MSG_TO_UI_ACTION); //收到信息
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -128,11 +128,18 @@ public class ChatMainActivity extends Activity {
                             e.printStackTrace();
                         }
                         break;
-                    case Constant.BROADCAST_RECEIVE_MSG_ACTION:
+                    case Constant.BROADCAST_RECEIVE_MSG_TO_UI_ACTION:
                         User fromUser = intent.getParcelableExtra("fromUser");
                         String receiveMsg = intent.getStringExtra("receiveMsg");
-                        SystemUtil.vibrate(context); //调用手机震动
-                        showReceive(fromUser, receiveMsg);
+                        if(ChatRoomActivity.isIsAlive() && ChatRoomActivity.getCharUser() != null){
+                            if(fromUser.getIp().equals(ChatRoomActivity.getCharUser().getIp())){
+                                intent.setAction(Constant.BROADCAST_RECEIVE_MSG_ACTION);
+                                sendBroadcast(intent);
+                            }
+                        }else {
+                            SystemUtil.vibrate(context); //调用手机震动
+                            showReceive(fromUser, receiveMsg);
+                        }
                         break;
                 }
             }

@@ -81,7 +81,7 @@ public class CoreService extends Service {
                                         Intent intent = new Intent();
                                         intent.putExtra("fromUser", communicationBean.getFromUser());
                                         intent.putExtra("receiveMsg", receiveMsg);
-                                        intent.setAction(Constant.BROADCAST_RECEIVE_MSG_ACTION);
+                                        intent.setAction(Constant.BROADCAST_RECEIVE_MSG_TO_UI_ACTION);
                                         sendBroadcast(intent);
                                     }
 
