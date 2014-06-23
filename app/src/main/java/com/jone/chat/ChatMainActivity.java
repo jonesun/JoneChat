@@ -23,7 +23,9 @@ import android.widget.Toast;
 
 import com.jone.chat.adapter.UserExpandableListAdapter;
 import com.jone.chat.application.App;
+import com.jone.chat.bean.ChatMessage;
 import com.jone.chat.bean.User;
+import com.jone.chat.enums.MessageType;
 import com.jone.chat.ui.activity.ChatRoomActivity;
 import com.jone.chat.util.ShakeListener;
 import com.jone.chat.util.SystemUtil;
@@ -130,7 +132,7 @@ public class ChatMainActivity extends Activity {
                         break;
                     case Constant.BROADCAST_RECEIVE_MSG_TO_UI_ACTION:
                         User fromUser = intent.getParcelableExtra("fromUser");
-                        String receiveMsg = intent.getStringExtra("receiveMsg");
+                        ChatMessage receiveMsg = (ChatMessage) intent.getSerializableExtra("receiveMsg");
                         if(ChatRoomActivity.isIsAlive() && ChatRoomActivity.getCharUser() != null){
                             if(fromUser.getIp().equals(ChatRoomActivity.getCharUser().getIp())){
                                 intent.setAction(Constant.BROADCAST_RECEIVE_MSG_ACTION);
@@ -147,7 +149,7 @@ public class ChatMainActivity extends Activity {
         registerReceiver(broadcastReceiver, intentFilter);
     }
 
-    private void showReceive(final User fromUser, final String receiveMsg){
+    private void showReceive(final User fromUser, final ChatMessage receiveMsg){
         TextView textView = (TextView) layoutBottom.findViewWithTag(fromUser.getIp());
         if(textView == null){
             textView = new TextView(ChatMainActivity.this);
@@ -168,7 +170,12 @@ public class ChatMainActivity extends Activity {
             });
             layoutBottom.addView(textView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 45));
         }
-        textView.setText(fromUser.getUserName() + "发来新消息:" + receiveMsg);
+        if(receiveMsg.getMessageType().toString().equals(MessageType.PHOTO.toString())){
+            textView.setText(fromUser.getUserName() + "发来图片");
+        }else {
+            textView.setText(fromUser.getUserName() + "发来新消息:" + receiveMsg.getContent());
+        }
+
     }
 
     private void refreshOnlineUsers(){

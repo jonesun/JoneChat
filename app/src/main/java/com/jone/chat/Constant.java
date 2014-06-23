@@ -14,4 +14,6 @@ public class Constant {
 
     public static final String BROADCAST_RECEIVE_MSG_TO_UI_ACTION = "broadcastReceiveToUIMsg";
     public static final String BROADCAST_RECEIVE_MSG_ACTION = "broadcastReceiveMsg";
+
+    public static final String IMAGE_PATH_KEY = "imagePath";
 }

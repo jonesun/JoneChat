@@ -18,7 +18,9 @@ interface ICoreService {
      */
     /*void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,
             double aDouble, String aString);*/
+
     void send(in User toUser, String msg);
+    void sendPhoto(in User toUser, String photo);
     //String receive();
     List<User> getOnlineUsers();
     void noticeOnline();

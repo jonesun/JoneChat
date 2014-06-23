@@ -1,5 +1,8 @@
 package com.jone.chat.bean;
 
+import com.jone.chat.enums.MessageType;
+
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -7,68 +10,58 @@ import java.util.Date;
  * 消息类
  * Created by jone on 2014/6/17.
  */
-public class ChatMessage {
-    private String senderIp;	//消息发送者的ip
-    private String senderName;	//消息发送者的名字
-    //	private String reciverIp;	//消息接收者的ip
-    private String msg;			//信息内容
-    private Date time;		//发送时间 :格式：
-    private boolean selfMsg;	//是否自己发送
+public class ChatMessage implements Serializable{
+    private String fromUserName;
+    private MessageType messageType;
+    private String content;
+    private long sendTime;
 
-    public ChatMessage(){
-        this.selfMsg = false;	//默认不是自己
-    }
+    public ChatMessage(){}
 
-    public ChatMessage(String senderIp, String senderName,
-                       String msg, Date time) {
-        super();
-        this.senderIp = senderIp;
-        this.senderName = senderName;
-//		this.reciverIp = reciverIp;
-        this.msg = msg;
-        this.time = time;
-        this.selfMsg = false;	//默认不是自己
-    }
-    public String getSenderIp() {
-        return senderIp;
-    }
-    public void setSenderIp(String senderIp) {
-        this.senderIp = senderIp;
-    }
-    public String getSenderName() {
-        return senderName;
-    }
-    public void setSenderName(String senderName) {
-        this.senderName = senderName;
-    }
-    //	public String getReciverIp() {
-//		return reciverIp;
-//	}
-//	public void setReciverIp(String reciverIp) {
-//		this.reciverIp = reciverIp;
-//	}
-    public String getMsg() {
-        return msg;
-    }
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-    public Date getTime() {
-        return time;
-    }
-    public void setTime(Date time) {
-        this.time = time;
-    }
-    public boolean isSelfMsg() {
-        return selfMsg;
-    }
-    public void setSelfMsg(boolean selfMsg) {
-        this.selfMsg = selfMsg;
+    public ChatMessage(String fromUserName, String content){
+        this.fromUserName = fromUserName;
+        this.messageType = MessageType.TEXT;
+        this.content = content;
+        this.sendTime = System.currentTimeMillis();
     }
 
-    public String getTimeStr(){	//返回格式为HH:mm:ss的时间字符串
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+    public ChatMessage(String fromUserName, MessageType messageType, String content){
+        this.fromUserName = fromUserName;
+        this.messageType = messageType;
+        this.content = content;
+        this.sendTime = System.currentTimeMillis();
+    }
 
-        return sdf.format(time);
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public long getSendTime() {
+        return sendTime;
+    }
+
+    public void setSendTime(long sendTime) {
+        this.sendTime = sendTime;
+    }
+
+    public String getFromUserName() {
+        return fromUserName;
+    }
+
+    public void setFromUserName(String fromUserName) {
+        this.fromUserName = fromUserName;
     }
 }

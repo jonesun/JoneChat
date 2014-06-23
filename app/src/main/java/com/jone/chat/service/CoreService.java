@@ -14,8 +14,10 @@ import android.widget.RemoteViews;
 import com.jone.chat.Constant;
 import com.jone.chat.R;
 import com.jone.chat.application.App;
+import com.jone.chat.bean.ChatMessage;
 import com.jone.chat.bean.CommunicationBean;
 import com.jone.chat.bean.User;
+import com.jone.chat.enums.MessageType;
 import com.jone.chat.net.MethodArgsException;
 import com.jone.chat.net.UDPClient;
 import com.jone.chat.net.UDPListener;
@@ -73,8 +75,8 @@ public class CoreService extends Service {
                                     receiver.receive(App.getSerializer().dump(getLocalOnlineInfo()));
                                     break;
                                 case Constant.NET_SEND_MSG:
-                                    String receiveMsg = data.toString();
-                                    System.out.println("receiveMsg: " + receiveMsg);
+                                    ChatMessage receiveMsg = (ChatMessage) data;
+                                    System.out.println("receiveMsg: " + receiveMsg.getContent());
                                     if(isUIDestroy){ //如果UI关闭了,则发一个通知
                                         showNotification(communicationBean.getFromUser(), receiveMsg);
                                     }else {
@@ -84,7 +86,6 @@ public class CoreService extends Service {
                                         intent.setAction(Constant.BROADCAST_RECEIVE_MSG_TO_UI_ACTION);
                                         sendBroadcast(intent);
                                     }
-
                                     break;
                             }
 
@@ -159,7 +160,7 @@ public class CoreService extends Service {
     /**
      * 在状态栏显示通知
      */
-    private void showNotification(User fromUser, String receiveMsg){
+    private void showNotification(User fromUser, ChatMessage receiveMsg){
         NotificationManager notificationManager = (NotificationManager)getSystemService(android.content.Context.NOTIFICATION_SERVICE);
         Notification notification = new Notification();
         notification.icon = R.drawable.ic_launcher;
@@ -171,7 +172,11 @@ public class CoreService extends Service {
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.layout_notification);
         remoteViews.setTextViewText(R.id.txtTile, fromUser.getUserName() + "发来消息");
-        remoteViews.setTextViewText(R.id.txtContent, receiveMsg);
+        if(receiveMsg.getMessageType().toString().equals(MessageType.PHOTO.toString())){
+            remoteViews.setTextViewText(R.id.txtContent, "图片");
+        }else {
+            remoteViews.setTextViewText(R.id.txtContent, receiveMsg.getContent());
+        }
         notification.contentView = remoteViews;
         notification.contentIntent = contentIntent;
         notificationManager.notify(0, notification);
@@ -217,7 +222,15 @@ public class CoreService extends Service {
 
         @Override
         public void send(User toUser, String msg) throws RemoteException {
-            CommunicationBean communicationBean = new CommunicationBean(getLocalUser(), toUser, Constant.NET_SEND_MSG, msg);
+            User localUser = getLocalUser();
+            CommunicationBean communicationBean = new CommunicationBean(localUser, toUser, Constant.NET_SEND_MSG, new ChatMessage(localUser.getUserName(), MessageType.TEXT, msg));
+            udpClient.sendMsg(toUser.getIp(), App.getSerializer().dump(communicationBean));
+        }
+
+        @Override
+        public void sendPhoto(User toUser, String photo) throws RemoteException {
+            User localUser = getLocalUser();
+            CommunicationBean communicationBean = new CommunicationBean(getLocalUser(), toUser, Constant.NET_SEND_MSG, new ChatMessage(localUser.getUserName(), MessageType.PHOTO, photo));
             udpClient.sendMsg(toUser.getIp(), App.getSerializer().dump(communicationBean));
         }
 

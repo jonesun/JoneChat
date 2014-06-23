@@ -34,6 +34,11 @@
             android:name=".ui.activity.ChatRoomActivity"
             android:label="@string/title_activity_chat_room" >
         </activity>
+        <activity
+            android:name=".ui.activity.SelectPicPopupWindowActivity"
+            android:label="@string/title_activity_select_pic_popup_window"
+            android:theme="@style/MyDialogStyleBottom">
+        </activity>
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

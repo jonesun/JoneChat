@@ -7,5 +7,6 @@
     <string name="no_wifi">没有wifi连接，请检查wifi设置后再启动本程序。</string>
     <string name="title_activity_transitional_page">TransitionalPageActivity</string>
     <string name="title_activity_chat_room">ChatRoomActivity</string>
+    <string name="title_activity_select_pic_popup_window">SelectPicPopupWindowActivity</string>
 
 </resources>
