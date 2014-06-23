@@ -7,13 +7,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.jone.chat.Constant;
@@ -22,11 +26,14 @@ import com.jone.chat.adapter.ChatListAdapter;
 import com.jone.chat.application.App;
 import com.jone.chat.bean.User;
 import com.jone.chat.util.SystemUtil;
+import com.rockerhieu.emojicon.EmojiconGridFragment;
+import com.rockerhieu.emojicon.EmojiconsFragment;
+import com.rockerhieu.emojicon.emoji.Emojicon;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatRoomActivity extends Activity {
+public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFragment.OnEmojiconClickedListener, EmojiconsFragment.OnEmojiconBackspaceClickedListener{
     private static boolean isAlive;
 
     private static User charUser = null;
@@ -38,6 +45,8 @@ public class ChatRoomActivity extends Activity {
     private ChatListAdapter adapter;
     private EditText editInput;
     private Button btnSend;
+    private CheckBox checkEmoji;
+    private LinearLayout layoutCandidate;
 
     private List<String> msgList = new ArrayList<>();
 
@@ -75,13 +84,23 @@ public class ChatRoomActivity extends Activity {
         chat_list = (ListView) findViewById(R.id.chat_list);
         adapter = new ChatListAdapter(this, msgList);
         chat_list.setAdapter(adapter);
+        checkEmoji = (CheckBox) findViewById(R.id.checkEmoji);
         editInput = (EditText) findViewById(R.id.editInput);
         btnSend = (Button) findViewById(R.id.btnSend);
+        layoutCandidate = (LinearLayout) findViewById(R.id.layoutCandidate);
 
         if(getCharUser() != null){
             txtChatUserName.setText(getCharUser().getUserName());
             txtChatUserIP.setText(getCharUser().getIp());
         }
+
+        editInput.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showEmojiLayout(false);
+                checkEmoji.setChecked(false);
+            }
+        });
 
         btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,11 +109,19 @@ public class ChatRoomActivity extends Activity {
             }
         });
 
+        checkEmoji.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showEmojiLayout(checkEmoji.isChecked());
+            }
+        });
+
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(editInput.getText().length() > 0){
                     String msg = editInput.getText().toString();
+                    System.out.println("ssss: " + msg);
                     if(getCharUser() != null){
                         try {
                             App.getInstance().getCoreService().send(getCharUser(), msg);
@@ -110,6 +137,17 @@ public class ChatRoomActivity extends Activity {
                 }
             }
         });
+    }
+
+    private void showEmojiLayout(boolean isShow){
+        if(isShow){
+            SystemUtil.hideKeyBoard(ChatRoomActivity.this);
+            layoutCandidate.setVisibility(View.VISIBLE);
+            //todo 隐藏键盘
+
+        }else {
+            layoutCandidate.setVisibility(View.GONE);
+        }
     }
 
     private void bindBroadcast(){
@@ -164,5 +202,15 @@ public class ChatRoomActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onEmojiconBackspaceClicked(View view) {
+        EmojiconsFragment.backspace(editInput);
+    }
+
+    @Override
+    public void onEmojiconClicked(Emojicon emojicon) {
+        EmojiconsFragment.input(editInput, emojicon);
     }
 }

@@ -28,5 +28,6 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'io.netty:netty-all:4.0.19.Final'
     compile 'com.google.code.gson:gson:2.2.+'
+    compile 'com.rockerhieu.emojicon:library:1.0'
 //    compile 'org.yaml:snakeyaml:1.13'
 }

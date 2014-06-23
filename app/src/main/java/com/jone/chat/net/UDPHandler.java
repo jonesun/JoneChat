@@ -1,5 +1,7 @@
 package com.jone.chat.net;
 
+import com.jone.chat.util.StringUtil;
+
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,6 +24,7 @@ public class UDPHandler extends SimpleChannelInboundHandler<DatagramPacket> impl
         datagramPacket = packet;
         if (listener != null) {
             String response = packet.content().toString(CharsetUtil.UTF_8);
+            response = StringUtil.decodeByBase64(response); //解码
             listener.onReceived(packet.sender(), response, this);
         }
     }
@@ -46,6 +49,7 @@ public class UDPHandler extends SimpleChannelInboundHandler<DatagramPacket> impl
 
     @Override
     public void receive(String msg){
+        msg = StringUtil.encodeToStringByBase64(msg);//编码
         if(getChannelHandlerContext() != null && datagramPacket != null){
             getChannelHandlerContext().writeAndFlush(new DatagramPacket(
                     Unpooled.copiedBuffer(msg, CharsetUtil.UTF_8), datagramPacket.sender()));

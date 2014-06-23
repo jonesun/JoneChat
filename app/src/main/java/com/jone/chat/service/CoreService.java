@@ -155,6 +155,7 @@ public class CoreService extends Service {
         return new CommunicationBean(localUser, null, Constant.NET_USER_ONLINE_ACTION, localUser);
     }
 
+
     /**
      * 在状态栏显示通知
      */

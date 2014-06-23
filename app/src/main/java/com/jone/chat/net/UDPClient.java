@@ -1,5 +1,7 @@
 package com.jone.chat.net;
 
+import com.jone.chat.util.StringUtil;
+
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
@@ -42,6 +44,7 @@ public class UDPClient extends UDPClientOperator{
 
     @Override
     public void sendMsg(String ip, int port, String msg){
+        msg = StringUtil.encodeToStringByBase64(msg);//编码
         if(udpHandler != null){
             try {
                 udpHandler.getChannelHandlerContext().writeAndFlush(

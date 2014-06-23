@@ -1,5 +1,6 @@
 package com.jone.chat.util;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -8,6 +9,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 
 import org.apache.http.conn.util.InetAddressUtils;
 
@@ -106,5 +108,15 @@ public class SystemUtil {
     public static void vibrate(Context context){
         Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(300);
+    }
+
+    /**
+     * 隐藏键盘
+     * @param activity
+     */
+    public static void hideKeyBoard(Activity activity) {
+        ((InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE))
+                .hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(),
+                        InputMethodManager.HIDE_NOT_ALWAYS);
     }
 }

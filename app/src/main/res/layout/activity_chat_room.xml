@@ -57,27 +57,58 @@
     <LinearLayout
         android:id="@+id/layoutInput"
         android:layout_width="match_parent"
-        android:layout_height="45dp"
-        android:orientation="horizontal"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:layout_alignParentBottom="true">
-        <EditText
-            android:id="@+id/editInput"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dip"
-            android:singleLine="true"/>
-        <Button
-            android:id="@+id/btnSend"
-            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:orientation="horizontal">
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:layout_weight="0"
+                android:id="@+id/checkEmoji"
+                android:button="@android:color/transparent"
+                android:text="表情"
+                android:textColor="@color/check_emoji"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:gravity="center"/>
+            <com.rockerhieu.emojicon.EmojiconEditText
+                android:id="@+id/editInput"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="I \ue32d emojicon"
+                android:layout_weight="1"
+                android:layout_marginLeft="5dip"/>
+            <Button
+                android:id="@+id/btnSend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:background="@drawable/bg_btn_chat_send"
+                android:layout_marginLeft="4dip"
+                android:layout_marginRight="4dip"
+                android:text="发送"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"/>
+         </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layoutCandidate"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:background="@drawable/bg_btn_chat_send"
-            android:layout_marginLeft="4dip"
-            android:layout_marginRight="4dip"
-            android:text="发送"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"/>
+            android:orientation="vertical"
+            android:visibility="gone">
+            <fragment
+                android:id="@+id/emojicons"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                class="com.rockerhieu.emojicon.EmojiconsFragment"
+                android:layout_below="@+id/layoutInput"/>
+        </LinearLayout>
+
     </LinearLayout>
+
 
 </RelativeLayout>
