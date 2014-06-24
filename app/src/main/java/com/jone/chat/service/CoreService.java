@@ -73,6 +73,10 @@ public class CoreService extends Service {
                                     user.setLastActiveTime(System.currentTimeMillis());
                                     userMap.put(user.getIp(), user);
                                     receiver.receive(App.getSerializer().dump(getLocalOnlineInfo()));
+                                    //告诉UI刷新
+                                    Intent i = new Intent(Constant.BROADCAST_USER_ONLINE_ACTION);
+                                    i.putExtra("user", user);
+                                    sendBroadcast(i);
                                     break;
                                 case Constant.NET_SEND_MSG:
                                     ChatMessage receiveMsg = (ChatMessage) data;

@@ -115,6 +115,7 @@ public class ChatMainActivity extends Activity {
         intentFilter.addAction(Intent.ACTION_TIME_TICK); // 每分钟更新，只能采用代码registerReceiver动态注册方式
         intentFilter.addAction(Intent.ACTION_TIME_CHANGED); // 时间被改变，人为设置时间
         intentFilter.addAction(Constant.BROADCAST_RECEIVE_MSG_TO_UI_ACTION); //收到信息
+        intentFilter.addAction(Constant.BROADCAST_USER_ONLINE_ACTION); //收到有设备上线
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -142,6 +143,14 @@ public class ChatMainActivity extends Activity {
                             SystemUtil.vibrate(context); //调用手机震动
                             showReceive(fromUser, receiveMsg);
                         }
+                        break;
+                    case Constant.BROADCAST_USER_ONLINE_ACTION:
+                        User user = intent.getParcelableExtra("user");
+                        if(!user.getIp().equals(SystemUtil.getLocalIpAddress())){
+                            System.out.println(user.getUserName() + "上线了.");
+                            Toast.makeText(ChatMainActivity.this, user.getUserName() + "上线了.", Toast.LENGTH_SHORT).show();
+                        }
+                        refreshOnlineUsers();
                         break;
                 }
             }
@@ -175,7 +184,6 @@ public class ChatMainActivity extends Activity {
         }else {
             textView.setText(fromUser.getUserName() + "发来新消息:" + receiveMsg.getContent());
         }
-
     }
 
     private void refreshOnlineUsers(){
