@@ -39,20 +39,19 @@
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"/>
     </RelativeLayout>
-    <RelativeLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/layoutTop"
         android:layout_above="@+id/layoutInput">
-        <ListView
-            android:id="@+id/chat_list"
+        <LinearLayout
+            android:id="@+id/layoutChatList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:transcriptMode="alwaysScroll"
-            android:cacheColorHint="@null"
-            android:divider="@android:color/transparent"
-            android:layout_alignParentBottom="true"/>
-    </RelativeLayout>
+            android:orientation="vertical"
+            android:layout_gravity="bottom">
+        </LinearLayout>
+    </ScrollView>
 
     <LinearLayout
         android:id="@+id/layoutInput"

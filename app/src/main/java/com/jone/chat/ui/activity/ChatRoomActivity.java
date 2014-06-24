@@ -1,6 +1,5 @@
 package com.jone.chat.ui.activity;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,33 +7,33 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.app.FragmentActivity;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.android.volley.toolbox.NetworkImageView;
 import com.jone.chat.Constant;
 import com.jone.chat.R;
-import com.jone.chat.adapter.ChatListAdapter;
 import com.jone.chat.application.App;
 import com.jone.chat.bean.ChatMessage;
 import com.jone.chat.bean.User;
 import com.jone.chat.enums.MessageType;
 import com.jone.chat.util.PhotoUtils;
 import com.jone.chat.util.SystemUtil;
+import com.jone.chat.util.VolleyUtil;
 import com.rockerhieu.emojicon.EmojiconGridFragment;
+import com.rockerhieu.emojicon.EmojiconTextView;
 import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFragment.OnEmojiconClickedListener, EmojiconsFragment.OnEmojiconBackspaceClickedListener{
     private static boolean isAlive;
@@ -44,16 +43,13 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
     private TextView txtChatUserName;
     private TextView txtChatUserIP;
     private Button btnClose;
-    private ListView chat_list;
-    private ChatListAdapter adapter;
+    private LinearLayout layoutChatList;
     private EditText editInput;
     private Button btnSend;
     private CheckBox checkEmoji;
     private LinearLayout layoutCandidate;
 
     private CheckBox checkPhoto;
-
-    private List<ChatMessage> msgList = new ArrayList<>();
 
     private BroadcastReceiver broadcastReceiver;
 
@@ -70,14 +66,14 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
         super.onCreate(savedInstanceState);
         isAlive = true;
         setContentView(R.layout.activity_chat_room);
+        initViews();
         if(getIntent() != null){
             charUser = getIntent().getParcelableExtra("fromUser");
             ChatMessage receiveMsg = (ChatMessage) getIntent().getSerializableExtra("receiveMsg");
             if(receiveMsg != null){
-                msgList.add(receiveMsg);
+                addChatView(receiveMsg);
             }
         }
-        initViews();
         bindBroadcast();
     }
 
@@ -86,9 +82,7 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
         txtChatUserName = (TextView) findViewById(R.id.txtChatUserName);
         txtChatUserIP = (TextView) findViewById(R.id.txtChatUserIP);
         btnClose = (Button) findViewById(R.id.btnClose);
-        chat_list = (ListView) findViewById(R.id.chat_list);
-        adapter = new ChatListAdapter(this, msgList);
-        chat_list.setAdapter(adapter);
+        layoutChatList = (LinearLayout) findViewById(R.id.layoutChatList);
         checkPhoto = (CheckBox) findViewById(R.id.checkPhoto);
         checkEmoji = (CheckBox) findViewById(R.id.checkEmoji);
         editInput = (EditText) findViewById(R.id.editInput);
@@ -139,8 +133,7 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
                     if(getCharUser() != null){
                         try {
                             App.getInstance().getCoreService().send(getCharUser(), msg);
-                            msgList.add(new ChatMessage("我", msg));
-                            adapter.notifyDataSetChanged();
+                            addChatView(new ChatMessage("我", msg));
                         } catch (RemoteException e) {
                             e.printStackTrace();
                         }finally {
@@ -151,6 +144,42 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
                 }
             }
         });
+    }
+
+    private void addChatView(ChatMessage chatMessage){
+        LinearLayout chatGroupView = new LinearLayout(ChatRoomActivity.this);
+        LinearLayout chatView = new LinearLayout(ChatRoomActivity.this);
+        chatView.setMinimumWidth(45);
+        chatView.setMinimumHeight(45);
+        chatView.setPadding(8, 8, 8, 8);
+        chatView.setGravity(Gravity.CENTER);
+        if(chatMessage.getFromUserName().equals("我")){ //后续优化判断条件
+            chatView.setBackgroundResource(R.drawable.bg_message_from_me_list_item);
+            chatGroupView.setGravity(Gravity.CENTER_VERTICAL | Gravity.RIGHT);
+        }else {
+            chatView.setBackgroundResource(R.drawable.bg_message_list_item);
+            chatGroupView.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
+        }
+        if(chatMessage.getMessageType().toString().equals(MessageType.PHOTO.toString())){
+            //显示图片
+            if(chatMessage.getFromUserName().equals("我")){
+                ImageView imageView = new ImageView(ChatRoomActivity.this);
+                imageView.setImageBitmap(PhotoUtils.getImageThumbnail(chatMessage.getContent(), 100, 100));
+                chatView.addView(imageView);
+            }else {
+                NetworkImageView imageView = new NetworkImageView(ChatRoomActivity.this);
+                VolleyUtil.showImageByNetworkImageView(ChatRoomActivity.this, imageView, "http://" + chatMessage.getContent());
+                chatView.addView(imageView, new ViewGroup.LayoutParams(100, 100));
+            }
+
+        }else {
+            //显示文字
+            EmojiconTextView textView = new EmojiconTextView(ChatRoomActivity.this);
+            textView.setText(chatMessage.getContent());
+            chatView.addView(textView);
+        }
+        chatGroupView.addView(chatView);
+        layoutChatList.addView(chatGroupView);
     }
 
     private void showEmojiLayout(boolean isShow){
@@ -176,8 +205,7 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
                         ChatMessage receiveMsg = (ChatMessage) intent.getSerializableExtra("receiveMsg");
                         if(fromUser != null && fromUser.getIp().equals(getCharUser().getIp())){ //发给自己的再更新列表
                             SystemUtil.vibrate(context);
-                            msgList.add(receiveMsg);
-                            adapter.notifyDataSetChanged();
+                            addChatView(receiveMsg);
                         }
                         break;
                 }
@@ -198,8 +226,7 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
                         if(imagePath != null){
                             //todo 得到了图片的位置
                             try {
-                                msgList.add(new ChatMessage("我", MessageType.PHOTO, imagePath));
-                                adapter.notifyDataSetChanged();
+                                addChatView(new ChatMessage("我", MessageType.PHOTO, imagePath));
                                 App.getInstance().getCoreService().sendPhoto(charUser, imagePath);
                             } catch (RemoteException e) {
                                 e.printStackTrace();
