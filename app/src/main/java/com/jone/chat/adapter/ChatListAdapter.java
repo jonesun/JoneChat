@@ -48,13 +48,16 @@ public class ChatListAdapter extends ArrayAdapter<ChatMessage> {
             holder.layoutMsg.setBackgroundResource(R.drawable.bg_message_list_item);
             ((LinearLayout)convertView).setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
         }
-        if(chatMessage.getMessageType().toString().equals(MessageType.PHOTO.toString())){
-            holder.imMsg.setVisibility(View.VISIBLE);
-            holder.imMsg.setImageBitmap(PhotoUtils.getImageThumbnail(chatMessage.getContent(), 100, 100));
-        }else {
-            holder.txtMsg.setVisibility(View.VISIBLE);
-            holder.txtMsg.setText(chatMessage.getContent());
-        }
+
+        holder.txtMsg.setVisibility(View.VISIBLE);
+        holder.txtMsg.setText(chatMessage.getContent());
+//        if(chatMessage.getMessageType().toString().equals(MessageType.PHOTO.toString())){
+//            holder.imMsg.setVisibility(View.VISIBLE);
+//            holder.imMsg.setImageBitmap(PhotoUtils.getImageThumbnail(chatMessage.getContent(), 100, 100));
+//        }else {
+//            holder.txtMsg.setVisibility(View.VISIBLE);
+//            holder.txtMsg.setText(chatMessage.getContent());
+//        }
         return convertView;
     }
 

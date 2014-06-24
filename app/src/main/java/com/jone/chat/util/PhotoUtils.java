@@ -31,6 +31,7 @@ import android.view.View;
 
 
 import com.jone.chat.R;
+import com.jone.chat.application.App;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -47,11 +48,6 @@ import java.util.UUID;
  * @version 1.0
  */
 public class PhotoUtils {
-	// 图片在SD卡中的缓存路径
-	private static final String IMAGE_PATH = Environment
-			.getExternalStorageDirectory().toString()
-			+ File.separator
-			+ "appJone" + File.separator + "Images" + File.separator;
 	// 相册的RequestCode
 	public static final int INTENT_REQUEST_CODE_ALBUM = 0;
 	// 照相的RequestCode
@@ -99,9 +95,9 @@ public class PhotoUtils {
 	 * @return 照相后图片的路径
 	 */
 	public static String takePicture(Activity activity) {
-		FileUtils.createDirFile(IMAGE_PATH);
+		FileUtils.createDirFile(App.getIMAGE_PATH());
 		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-		String path = IMAGE_PATH + UUID.randomUUID().toString() + ".jpg";
+		String path = App.getIMAGE_PATH() + UUID.randomUUID().toString() + ".jpg";
 		File file = FileUtils.createNewFile(path);
 		if (file != null) {
 			intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
@@ -117,9 +113,9 @@ public class PhotoUtils {
      * @return 摄像后的路径
      */
     public static String takeVideo(Activity activity) {
-        FileUtils.createDirFile(IMAGE_PATH);
+        FileUtils.createDirFile(App.getIMAGE_PATH());
         Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-        String path = IMAGE_PATH + UUID.randomUUID().toString() + "video.mp4";
+        String path = App.getIMAGE_PATH() + UUID.randomUUID().toString() + "video.mp4";
         File file = FileUtils.createNewFile(path);
         if (file != null) {
             intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
@@ -174,9 +170,9 @@ public class PhotoUtils {
 	 * 删除图片缓存目录
 	 */
 	public static void deleteImageFile() {
-		File dir = new File(IMAGE_PATH);
+		File dir = new File(App.getIMAGE_PATH());
 		if (dir.exists()) {
-			FileUtils.delFolder(IMAGE_PATH);
+			FileUtils.delFolder(App.getIMAGE_PATH());
 		}
 	}
 
@@ -340,10 +336,10 @@ public class PhotoUtils {
 			return null;
 		}
 		FileOutputStream fileOutputStream = null;
-		FileUtils.createDirFile(IMAGE_PATH);
+		FileUtils.createDirFile(App.getIMAGE_PATH());
 
 		String fileName = UUID.randomUUID().toString() + ".jpg";
-		String newFilePath = IMAGE_PATH + fileName;
+		String newFilePath = App.getIMAGE_PATH() + fileName;
 		File file = FileUtils.createNewFile(newFilePath);
 		if (file == null) {
 			return null;

@@ -16,4 +16,6 @@ public class Constant {
     public static final String BROADCAST_RECEIVE_MSG_ACTION = "broadcastReceiveMsg";
 
     public static final String IMAGE_PATH_KEY = "imagePath";
+
+    public static final int JETTY_PORT = 9088;
 }

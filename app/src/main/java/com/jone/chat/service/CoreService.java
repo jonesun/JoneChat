@@ -234,6 +234,8 @@ public class CoreService extends Service {
         @Override
         public void sendPhoto(User toUser, String photo) throws RemoteException {
             User localUser = getLocalUser();
+            photo = localUser.getIp() + ":" + Constant.JETTY_PORT + photo;
+            System.out.println("photo: " + photo);
             CommunicationBean communicationBean = new CommunicationBean(getLocalUser(), toUser, Constant.NET_SEND_MSG, new ChatMessage(localUser.getUserName(), MessageType.PHOTO, photo));
             udpClient.sendMsg(toUser.getIp(), App.getSerializer().dump(communicationBean));
         }
