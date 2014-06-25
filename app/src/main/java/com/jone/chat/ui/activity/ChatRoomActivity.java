@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.app.FragmentActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,10 +16,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
@@ -44,12 +48,18 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
     private TextView txtChatUserIP;
     private Button btnClose;
     private LinearLayout layoutChatList;
+
+
+    private CheckBox checkType;
+    private Button btnSpeaking;
     private EditText editInput;
-    private Button btnSend;
     private CheckBox checkEmoji;
+    private Button btnSend;
+    private CheckBox checkAddMore;
     private LinearLayout layoutCandidate;
 
-    private CheckBox checkPhoto;
+    private ImageButton imBtnPhoto;
+    private RelativeLayout layoutAddMoreCandidate;
 
     private BroadcastReceiver broadcastReceiver;
 
@@ -83,25 +93,22 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
         txtChatUserIP = (TextView) findViewById(R.id.txtChatUserIP);
         btnClose = (Button) findViewById(R.id.btnClose);
         layoutChatList = (LinearLayout) findViewById(R.id.layoutChatList);
-        checkPhoto = (CheckBox) findViewById(R.id.checkPhoto);
-        checkEmoji = (CheckBox) findViewById(R.id.checkEmoji);
+
+        checkType = (CheckBox) findViewById(R.id.checkType);
+        btnSpeaking = (Button) findViewById(R.id.btnSpeaking);
         editInput = (EditText) findViewById(R.id.editInput);
+        checkEmoji = (CheckBox) findViewById(R.id.checkEmoji);
         btnSend = (Button) findViewById(R.id.btnSend);
+        checkAddMore = (CheckBox) findViewById(R.id.checkAddMore);
         layoutCandidate = (LinearLayout) findViewById(R.id.layoutCandidate);
+
+        imBtnPhoto = (ImageButton) findViewById(R.id.imBtnPhoto);
+        layoutAddMoreCandidate = (RelativeLayout) findViewById(R.id.layoutAddMoreCandidate);
 
         if(getCharUser() != null){
             txtChatUserName.setText(getCharUser().getUserName());
             txtChatUserIP.setText(getCharUser().getIp());
         }
-
-        editInput.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showEmojiLayout(false);
-                checkEmoji.setChecked(false);
-            }
-        });
-
         btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -109,18 +116,94 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
             }
         });
 
-        checkPhoto.setOnClickListener(new View.OnClickListener() {
+        checkType.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(checkType.isChecked()){
+                    checkEmoji.setChecked(false);
+                    checkAddMore.setChecked(false);
+                    btnSpeaking.setVisibility(View.VISIBLE);
+                    editInput.setVisibility(View.GONE);
+                    checkEmoji.setVisibility(View.GONE);
+                    checkAddMore.setVisibility(View.VISIBLE);
+                    btnSend.setVisibility(View.GONE);
+                }else {
+                    btnSpeaking.setVisibility(View.GONE);
+                    editInput.setVisibility(View.VISIBLE);
+                    checkEmoji.setVisibility(View.VISIBLE);
+                    if(editInput.getText().length() > 0){
+                        checkAddMore.setVisibility(View.GONE);
+                        btnSend.setVisibility(View.VISIBLE);
+                    }else {
+                        checkAddMore.setVisibility(View.VISIBLE);
+                        btnSend.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
+
+        checkEmoji.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                showEmojiLayout(b);
+                if(b){
+                    if(checkAddMore.isChecked()){
+                        checkAddMore.setChecked(false);
+                    }
+                }
+            }
+        });
+
+        editInput.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                checkEmoji.setChecked(false);
+            }
+        });
+        editInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if(editable.length() > 0){
+                    btnSend.setVisibility(View.VISIBLE);
+                    checkAddMore.setVisibility(View.GONE);
+                }else {
+                    btnSend.setVisibility(View.GONE);
+                    checkAddMore.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        checkAddMore.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    layoutAddMoreCandidate.setVisibility(View.VISIBLE);
+                    if(checkEmoji.isChecked()){
+                        checkEmoji.setChecked(false);
+                    }
+                }else {
+                    layoutAddMoreCandidate.setVisibility(View.GONE);
+                }
+            }
+        });
+
+
+
+        imBtnPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(ChatRoomActivity.this, SelectPicPopupWindowActivity.class);
                 startActivityForResult(intent, PhotoUtils.GET_PHOTO_CODE);
-            }
-        });
-
-        checkEmoji.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showEmojiLayout(checkEmoji.isChecked());
             }
         });
 
