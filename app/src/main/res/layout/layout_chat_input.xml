@@ -19,28 +19,6 @@
             android:layout_height="wrap_content"
             android:button="@drawable/src_check_type"
             android:background="@drawable/bg_check_chat_input"/>
-        <!--<CheckBox-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="45dp"-->
-            <!--android:layout_weight="0"-->
-            <!--android:id="@+id/checkPhoto"-->
-            <!--android:button="@android:color/transparent"-->
-            <!--android:text="图片"-->
-            <!--android:textColor="@color/check_emoji"-->
-            <!--android:paddingLeft="4dp"-->
-            <!--android:paddingRight="4dp"-->
-            <!--android:gravity="center"/>-->
-        <!--<CheckBox-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="45dp"-->
-            <!--android:layout_weight="0"-->
-            <!--android:id="@+id/checkEmoji"-->
-            <!--android:button="@android:color/transparent"-->
-            <!--android:text="表情"-->
-            <!--android:textColor="@color/check_emoji"-->
-            <!--android:paddingLeft="4dp"-->
-            <!--android:paddingRight="4dp"-->
-            <!--android:gravity="center"/>-->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"

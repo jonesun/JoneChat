@@ -181,6 +181,8 @@ public class ChatMainActivity extends Activity {
         }
         if(receiveMsg.getMessageType().toString().equals(MessageType.PHOTO.toString())){
             textView.setText(fromUser.getUserName() + "发来图片");
+        }else if(receiveMsg.getMessageType().toString().equals(MessageType.VOICE.toString())){
+            textView.setText(fromUser.getUserName() + "发来语音");
         }else {
             textView.setText(fromUser.getUserName() + "发来新消息:" + receiveMsg.getContent());
         }

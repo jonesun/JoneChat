@@ -8,5 +8,6 @@
     <string name="title_activity_transitional_page">TransitionalPageActivity</string>
     <string name="title_activity_chat_room">ChatRoomActivity</string>
     <string name="title_activity_select_pic_popup_window">SelectPicPopupWindowActivity</string>
+    <string name="title_activity_image_shower">ImageShowerActivity</string>
 
 </resources>

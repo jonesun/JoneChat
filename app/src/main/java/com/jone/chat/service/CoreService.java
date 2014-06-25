@@ -178,6 +178,8 @@ public class CoreService extends Service {
         remoteViews.setTextViewText(R.id.txtTile, fromUser.getUserName() + "发来消息");
         if(receiveMsg.getMessageType().toString().equals(MessageType.PHOTO.toString())){
             remoteViews.setTextViewText(R.id.txtContent, "图片");
+        }else if(receiveMsg.getMessageType().toString().equals(MessageType.VOICE.toString())){
+            remoteViews.setTextViewText(R.id.txtContent, "语音");
         }else {
             remoteViews.setTextViewText(R.id.txtContent, receiveMsg.getContent());
         }
@@ -237,6 +239,15 @@ public class CoreService extends Service {
             photo = localUser.getIp() + ":" + Constant.JETTY_PORT + photo;
             System.out.println("photo: " + photo);
             CommunicationBean communicationBean = new CommunicationBean(getLocalUser(), toUser, Constant.NET_SEND_MSG, new ChatMessage(localUser.getUserName(), MessageType.PHOTO, photo));
+            udpClient.sendMsg(toUser.getIp(), App.getSerializer().dump(communicationBean));
+        }
+
+        @Override
+        public void sendVoice(User toUser, String voice) throws RemoteException {
+            User localUser = getLocalUser();
+            voice = localUser.getIp() + ":" + Constant.JETTY_PORT + voice;
+            System.out.println("voice: " + voice);
+            CommunicationBean communicationBean = new CommunicationBean(getLocalUser(), toUser, Constant.NET_SEND_MSG, new ChatMessage(localUser.getUserName(), MessageType.VOICE, voice));
             udpClient.sendMsg(toUser.getIp(), App.getSerializer().dump(communicationBean));
         }
 

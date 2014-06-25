@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/ic_keyboard" android:state_checked="true"/>
+    <item android:drawable="@drawable/ic_menu_paste_holo_light" android:state_checked="true"/>
     <item android:drawable="@drawable/ic_speak" android:state_checked="false"/>
 </selector>

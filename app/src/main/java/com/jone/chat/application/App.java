@@ -27,6 +27,7 @@ public class App extends Application {
 
     // 图片在SD卡中的缓存路径
     private static String IMAGE_PATH;
+    private static String VOICE_PATH;
 
     ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -55,6 +56,10 @@ public class App extends Application {
         return IMAGE_PATH;
     }
 
+    public static String getVOICE_PATH() {
+        return VOICE_PATH;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -62,6 +67,8 @@ public class App extends Application {
         serializer = new YamlSerializer();
         handler = new Handler();
         IMAGE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + getPackageName() + File.separator + "Images" + File.separator;
+        VOICE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + getPackageName() + File.separator + "Voice" + File.separator;
+        FileUtils.createDirFile(VOICE_PATH);
         if(SystemUtil.getCurrentProcessName(this).equals(getPackageName())){
             Intent intent = new Intent("com.jone.chat.CoreService");
             bindService(intent, serviceConnection, Service.BIND_AUTO_CREATE);

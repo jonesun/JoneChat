@@ -18,4 +18,5 @@ public class Constant {
     public static final String IMAGE_PATH_KEY = "imagePath";
 
     public static final int JETTY_PORT = 9088;
+
 }

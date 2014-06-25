@@ -21,6 +21,7 @@ interface ICoreService {
 
     void send(in User toUser, String msg);
     void sendPhoto(in User toUser, String photo);
+    void sendVoice(in User toUser, String voice);
     //String receive();
     List<User> getOnlineUsers();
     void noticeOnline();
