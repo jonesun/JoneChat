@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.Vibrator;
@@ -27,6 +28,7 @@ import com.jone.chat.bean.ChatMessage;
 import com.jone.chat.bean.User;
 import com.jone.chat.enums.MessageType;
 import com.jone.chat.ui.activity.ChatRoomActivity;
+import com.jone.chat.ui.dialog.ContactOurDialog;
 import com.jone.chat.util.ShakeListener;
 import com.jone.chat.util.SystemUtil;
 
@@ -77,11 +79,12 @@ public class ChatMainActivity extends Activity {
     }
 
     private void initViews(){
-        String localIp = SystemUtil.getLocalIpAddress();
+
         imBtnHead = (ImageButton) findViewById(R.id.imBtnHead);
         txtLocalName = (TextView) findViewById(R.id.txtLocalName);
-        txtLocalName.setText("用户(" + localIp + ")");
         txtLocalIP = (TextView) findViewById(R.id.txtLocalIP);
+        String localIp = SystemUtil.getLocalIpAddress();
+        txtLocalName.setText("用户(" + localIp + ")");
         txtLocalIP.setText(localIp);
 
         txtOnlineUserCount = (TextView) findViewById(R.id.txtOnlineUserCount);
@@ -116,6 +119,7 @@ public class ChatMainActivity extends Activity {
         intentFilter.addAction(Intent.ACTION_TIME_CHANGED); // 时间被改变，人为设置时间
         intentFilter.addAction(Constant.BROADCAST_RECEIVE_MSG_TO_UI_ACTION); //收到信息
         intentFilter.addAction(Constant.BROADCAST_USER_ONLINE_ACTION); //收到有设备上线
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION); //网络状态变化
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -151,6 +155,15 @@ public class ChatMainActivity extends Activity {
                             Toast.makeText(ChatMainActivity.this, user.getUserName() + "上线了.", Toast.LENGTH_SHORT).show();
                         }
                         refreshOnlineUsers();
+                        break;
+                    case ConnectivityManager.CONNECTIVITY_ACTION:
+                        System.out.println("网络状态变化");
+                        String localIp = SystemUtil.getLocalIpAddress();
+                        txtLocalName.setText("用户(" + localIp + ")");
+                        txtLocalIP.setText(localIp);
+                        refreshOnlineUsers();
+                        break;
+                    default:
                         break;
                 }
             }
@@ -216,7 +229,8 @@ public class ChatMainActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_about) {
+            new ContactOurDialog().show(getFragmentManager(), "about");
             return true;
         }
         return super.onOptionsItemSelected(item);

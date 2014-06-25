@@ -1,5 +1,6 @@
 package com.jone.chat.ui.activity;
 
+import android.app.ActionBar;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -446,8 +447,11 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
             textView.setText(chatMessage.getContent());
             chatView.addView(textView);
         }
+
         chatGroupView.addView(chatView);
-        layoutChatList.addView(chatGroupView);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        layoutParams.setMargins(4, 4, 4, 4);
+        layoutChatList.addView(chatGroupView, layoutParams);
     }
 
     private void showEmojiLayout(boolean isShow){
@@ -492,7 +496,6 @@ public class ChatRoomActivity extends FragmentActivity implements EmojiconGridFr
                     if(bundle != null){
                         String imagePath = bundle.getString(Constant.IMAGE_PATH_KEY);
                         if(imagePath != null){
-                            //todo 得到了图片的位置
                             try {
                                 addChatView(new ChatMessage("我", MessageType.PHOTO, imagePath));
                                 App.getInstance().getCoreService().sendPhoto(charUser, imagePath);
